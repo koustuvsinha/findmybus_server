@@ -1,0 +1,22 @@
+{
+  "name": "FindMyBus",
+  "version": "0.0.1",
+  "description": "Bus Locator",
+  "main": "app.js",
+  "dependencies": {
+    "express": "~3.4.8",
+    "hbs": "~2.5.0",
+    "mongojs": "~0.10.0",
+    "restify": "~2.6.1",
+    "save": "~0.0.20"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Bus"
+  ],
+  "author": "IEMPSK",
+  "license": "BSD-2-Clause"
+}
