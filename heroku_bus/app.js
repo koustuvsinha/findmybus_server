@@ -75,13 +75,14 @@ server.get(PATH, function(req,res,next) {
             if(st == 1) {
                 route.find({bus_name: "v1"}).sort({route_id : 1},function (error,data) {
                     console.log("Local data saving...");
-                    busroutes.create(data, getCoords);              //save to localdb
+                    saveLocal(data,0);              //save to localdb
+                    getCoords(error,data);
                 });
             }
             else{
                 console.log("Local Data available");
-                busroutes.find({},function(err,data) {
-                    getCoords(err,data[0]);
+                busroutes.find({"bus_name":"v1"},function(err,data) {
+                    getCoords(err,data);
                 });
             }
         }
@@ -172,29 +173,27 @@ server.get(SHOWPATH, function(req,res,next) {
         return next(new restify.InvalidArgumentError('Route must be supplied'));
     }else{
         if(req.params.route == 'v1') {
-	    var st = 0;
-	    busroutes.find({"bus_name": "v1"},function (error, routes) {
-		if(routes.length <= 0) { 
-			console.log("Empty array!");
-			st = 1;	
-		}
-		
-	   });
-	    if(st == 1) {
-            route.find({"bus_name": "v1"}).sort({route_id : 1},function (error,data) {
-		console.log("Local data saving...");
-		busroutes.create(data, showCoords);                 //save data to localdb
-		busroutes.find({},function(err1,routes) {
-		console.log(routes);
-		});
-	    });
-	    }
-	    else{
-		console.log("Local Data available");
-		busroutes.find({"bus_name": "v1"},function(err,success) {
-            showCoords(err,success[0]);
-        });
-	    }
+            var st = 0;
+            busroutes.find({"bus_name": "v1"},function (error, routes) {
+            if(routes.length <= 0) {
+                console.log("Empty array!");
+                st = 1;
+            }
+            });
+
+            if(st == 1) {
+                route.find({"bus_name": "v1"}).sort({route_id : 1},function (error,data) {
+                console.log("Local data saving...");            //save data to localdb
+                saveLocal(data,0);
+                showCoords(error,data);
+                });
+            }
+            else{
+                console.log("Local Data available");
+                busroutes.find({"bus_name": "v1"},function(err,success) {
+                    showCoords(err,success);
+                });
+            }
         }
     }
     function showCoords(err,success) {
@@ -209,7 +208,9 @@ server.get(SHOWPATH, function(req,res,next) {
         }
     }
 
+
 });
+
 
 //display current bus location
 
@@ -230,16 +231,14 @@ server.get(BUSPATH, function(req,res,next) {
             if(st == 1) {
                 route.find({bus_name: "v1"}).sort({route_id : 1},function (error,data) {
                     console.log("Local data saving...");
-                    busroutes.create(data, getLocation);                //save data to localdb
-                    busroutes.find({},function(err1,routes) {
-                        console.log(routes);
-                    });
+                    saveLocal(data,0);                //save data to localdb
+                    getLocation(error,data);
                 });
             }
             else{
                 console.log("Local Data available");
-                busroutes.find({},function(err,success) {
-                    getLocation(err,success[0]);
+                busroutes.find({"bus_name" : "v1"},function(err,success) {
+                    getLocation(err,success);
                 });
             }
         }
@@ -267,6 +266,7 @@ server.get(BUSPATH, function(req,res,next) {
 });
 
 
+
 server.get(LOGPATH,function(req,res,next) {
    //url format : route,bus,lat,lon,time,sp,desc
    if(req.params.route == undefined || req.params.bus == undefined || req.params.lat == undefined || req.params.lon == undefined || req.params.time == undefined || req.params.sp == undefined || req.params.desc == undefined) {
@@ -285,6 +285,7 @@ server.get(LOGPATH,function(req,res,next) {
 
 server.get(BUSLOG,function(req,res,next) {
    //url format : /location/all?route
+   //if all logs needed, add all=true
     if(req.params.route == undefined) {
         return next(new restify.InvalidArgumentError("API call error : route required"));
     }
@@ -295,7 +296,11 @@ server.get(BUSLOG,function(req,res,next) {
               res.send(200,"Logger Empty!");
                  res.next();
                 } else {
-              res.send(200,logs);
+              if(req.params.all == undefined) {
+                res.send(200,logs[logs.length - 1]);
+              }else{
+                res.send(200,logs);
+              }
               res.next();
                 }
           }
@@ -309,3 +314,17 @@ server.get(BUSLOG,function(req,res,next) {
 server.listen(port,function(){
 	console.log('%s listening at %s',server.name,server.url);
 });
+
+//global functions
+//local data save in save.js
+
+function saveLocal(data,i){
+    if(i<data.length) {
+        busroutes.create(data[i],function(err,succ) {
+            console.log(succ);
+            i++;
+            saveLocal(data,i);
+        });
+    }
+}
+
