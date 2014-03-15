@@ -3,7 +3,7 @@ var mongojs = require('mongojs');
 var http = require('https');
 var busroutes = require('save')('routes');
 
-var connection_string = 'mongodb://koustuv:sinha@ds029969.mongolab.com:29969/bus_routes';
+var connection_string = 'mongodb://iem:cse@ds029969.mongolab.com:29969/bus_routes';
 
 var db = mongojs(connection_string, ['bus_routes']);
 var route = db.collection("routes");
@@ -327,7 +327,7 @@ server.get(DELETELOG, function(req,res,next) {
         return next(new restify.InvalidArgumentError("API call error : route required"));
     }
     else {
-        if(req.params.pass == "ksinha") {
+        if(req.params.pass == "iwqwkdnna298") {
         dblogs.remove({"route" : req.params.route},function(err,succ) {
            if(succ) {
                res.send(200,"Records Deleted from Database");
